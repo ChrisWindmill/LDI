@@ -3,8 +3,9 @@
 ## Initial Creation
 
 ## Implementing a language in an interpreted environment
-### 01 The Lexxer
 - - - 
+### 01 The Lexxer
+
 ### 01.1 Defining out language
 #### 01.1.1 Defining our language - arithmetic operations
 #### 01.1.2 Defining our language - logical operations
@@ -21,9 +22,9 @@
 #### 01.2.6 Implementing the lexxer for 01.1.6
 ### 01.3 The finished product
 #### 01.3.1 the "finished" lexxer
-
-### 02 The Parser
 - - - 
+### 02 The Parser
+
 ### 02.1 
 ### 03 Using the shunting yard algorithm to generate RPN formatted tokens
 ### 04 A simple stack machine implementation

@@ -1,0 +1,13 @@
+package org.reldb.ldi.sili.vm.instructions;
+
+import org.reldb.ldi.sili.vm.Instruction;
+import org.reldb.ldi.sili.values.Value;
+import org.reldb.ldi.sili.vm.Context;
+
+public class OpGte extends Instruction {
+	private final static long serialVersionUID = 0;
+	public final void execute(Context context) {
+		Value v = context.pop();
+		context.push(context.pop().gte(v));
+	}
+}

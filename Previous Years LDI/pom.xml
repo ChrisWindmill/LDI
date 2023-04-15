@@ -1,0 +1,68 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>org.reldb.ldi</groupId>
+    <artifactId>ldi</artifactId>
+    <version>0.0.2-SNAPSHOT</version>
+    <name>LDI</name>
+    <description>Language Design and Implementation examples, from a university module I used to teach.</description>
+    <packaging>pom</packaging>
+
+    <licenses>
+        <license>
+            <name>Apache License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <scm>
+        <url>https://reldb.org</url>
+    </scm>
+
+    <organization>
+        <name>RelDB</name>
+        <url>https://reldb.org</url>
+    </organization>
+
+    <developers>
+        <developer>
+            <id>DaveVoorhis</id>
+            <name>Dave Voorhis</name>
+            <email>voorhis@gmail.com</email>
+            <url>https://github.com/DaveVoorhis</url>
+            <organization>RelDB</organization>
+            <organizationUrl>https://reldb.org</organizationUrl>
+            <roles>
+                <role>developer</role>
+            </roles>
+            <timezone>Europe/London</timezone>
+        </developer>
+    </developers>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <java.version>11</java.version>
+        <junit.version>5.9.0</junit.version>
+        <assertj-core.version>3.8.0</assertj-core.version>
+        <maven-compiler.version>3.8.1</maven-compiler.version>
+        <maven.compiler.source>${java.version}</maven.compiler.source>
+        <maven.compiler.target>${java.version}</maven.compiler.target>
+        <maven-jar.version>3.1.0</maven-jar.version>
+        <maven-surefire.version>3.0.0-M7</maven-surefire.version>
+        <maven-shade.version>3.4.0</maven-shade.version>
+        <javacc.version>3.0.1</javacc.version>
+    </properties>
+
+    <modules>
+      <module>Calc</module>
+      <module>CalcAST</module>
+      <module>SilVM</module>
+      <module>Silc</module>
+      <module>Sili</module>
+      <module>Silt</module>
+      <module>Slip</module>
+    </modules>
+
+</project>

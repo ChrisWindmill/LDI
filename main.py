@@ -1,4 +1,9 @@
-from dataclasses import dataclass
+import operators
+import shuntingYard
+import lexxer
+from lexeme import Lexeme
+from lexeme import Types
+
 
 class Bcolors:
     HEADER = '\033[95m'
@@ -11,43 +16,6 @@ class Bcolors:
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
 
-class Types:
-    NUMBER = 0
-    INTEGER = 1
-    FLOAT = 2
-    STRING = 3
-    IDENTIFIER = 4
-    BADD = 5
-    BSUB = 6
-    USUB = 7
-    BMUL = 8
-    BDIV = 9
-    BAND = 10
-    BOR = 11
-    UNEG = 12
-    EXPRESSIONTERMINATOR = 13
-    NEWLINE = 14
-    SUB = 15
-    LPAREN = 16
-    RPAREN = 17
-    LTRUE = 18
-    LFALSE = 19
-    ASSIGNMENT = 20
-    EQUALITY = 21
-    WALRUS = 22
-    OPERATOR = 23
-    VALUE = 24
-    CONTROL = 25
-
-@dataclass
-class Lexeme:
-    value: str
-    type: Types
-    supertype: Types
-    precedence: int
-
-    def __repr__(self):
-        return self.value
 
 def evaluate(rpn):
     result = None
@@ -56,179 +24,46 @@ def evaluate(rpn):
 
     for token in rpn:
         if token.supertype == Types.VALUE:
+            # Determine number type if not already done
+            if token.type == Types.NUMBER:
+                if operators.isInt(token.value):
+                    token.type = Types.INTEGER
+                elif operators.isFloat(token.value):
+                    token.type = Types.FLOAT
+            elif token.type == Types.LTRUE or token.type == Types.LFALSE:
+                pass
+            else:
+                token.type = Types.STRING
             stack.append(token)
         elif token.supertype == Types.OPERATOR:
             if token.type == Types.BADD:
-                rhs = stack.pop()
-                lhs = stack.pop()
-
-                # Determine if ints:
-                try:
-                    rhs = int(rhs.value)
-                    lhs = int(lhs.value)
-                    type = "int"
-                except ValueError:
-                    try:
-                        rhs = float(rhs.value)
-                        lhs = float(lhs.value)
-                        type = "float"
-                    except ValueError:
-                        if lhs.type == Types.STRING and rhs.type == Types.STRING:
-                            type = "string"
-
-                if type == "int":
-                    result = rhs + lhs
-                    stack.append(result)
-                elif type == "float":
-                    result = lhs + rhs
-                    stack.append(result)
-                elif type == "string":
-                    result = lhs.value[1:-1] + rhs.value[1:-1]
-                    stack.append(result)
-                else:
-                    stack.append("ERROR")
+                operators.binaryAdd(stack)
+            elif token.type == Types.BSUB:
+                operators.binarySubtract(stack)
+            elif token.type == Types.BMUL:
+                operators.binaryMultiply(stack)
+            elif token.type == Types.BDIV:
+                operators.binaryDivision(stack)
+            elif token.type == Types.BAND:
+                operators.binaryAND(stack)
+            elif token.type == Types.BOR:
+                operators.binaryOR(stack)
+            elif token.type == Types.ASSIGNMENT:
+                pass
+            elif token.type == Types.EQUALITY:
+                operators.binaryEquality(stack)
+            elif token.type == Types.UNEG:
+                operators.unaryNegation(stack)
+            elif token.type == Types.NOTEQUAL:
+                operators.binaryNotEqual(stack)
         else:
             pass
     result = stack.pop()
     return result
 
-def shuntingYard(lexemes):
-    rpn = []
-    operatorStack = []
-
-    for token in lexemes:
-        if token.supertype == Types.VALUE:
-            rpn.append(token)
-        elif token.supertype == Types.OPERATOR:
-            if len(operatorStack) > 0:
-                topOperator = operatorStack[-1]
-                if topOperator.type != Types.LPAREN:
-                    if token.precedence <= topOperator.precedence:
-                        rpn.append(operatorStack.pop())
-                operatorStack.append(token)
-            else:
-                operatorStack.append(token)
-        elif token.type == Types.LPAREN:
-            operatorStack.append(token)
-        elif token.type == Types.RPAREN:
-            while len(operatorStack) > 0:
-                topOperator = operatorStack[-1]
-                if topOperator.type != Types.LPAREN:
-                    rpn.append(operatorStack.pop())
-                else:
-                    operatorStack.pop() # remove left paren
-                    break
-    while len(operatorStack) > 0:
-        rpn.append(operatorStack.pop())
-    return rpn
-
-
-def srcLex(line):
-    lexemes = []
-    buffer = []
-    position = 0
-    positionMax = len(line)
-
-    while position < positionMax:
-        character = line[position]
-
-        if character == ";":
-            lexemes.append(Lexeme(";", Types.EXPRESSIONTERMINATOR, Types.CONTROL, 0))
-            position += 1
-        elif character.isdigit():
-            start = position
-            end = position
-            while end < positionMax and (line[end].isdigit() or line[end] == "."):
-                end = end + 1
-            token = line[start:end]
-            lexemes.append(Lexeme(token, Types.NUMBER, Types.VALUE, 0))
-            position = end
-        elif character.isalpha():
-            start = position
-            end = position
-            while end < positionMax and (line[end].isalnum()):
-                end = end + 1
-            token = line[start:end]
-
-            # Check for identities
-            if token == "false":
-                lexemes.append(Lexeme(token, Types.LFALSE, Types.VALUE, 0))
-            elif token == "true":
-                lexemes.append(Lexeme(token, Types.LTRUE, Types.VALUE, 0))
-            else:
-                lexemes.append(Lexeme(token, Types.IDENTIFIER, Types.VALUE, 0))
-            position = end
-        elif character == "\"":
-            start = position
-            end = position + 1
-            while line[end] != "\"":
-                end = end + 1
-            end +=1             # account for the "
-            token = line[start:end]
-            lexemes.append(Lexeme(token, Types.STRING, Types.VALUE, 0))
-            position = end + 1
-        elif character == "(":
-            lexemes.append(Lexeme("(", Types.LPAREN, Types.CONTROL, 0))
-            position += 1
-        elif character == ")":
-            lexemes.append(Lexeme(")", Types.RPAREN, Types.CONTROL, 0))
-            position += 1
-        elif character == "+":
-            lexemes.append(Lexeme("+", Types.BADD, Types.OPERATOR, 10))
-            position += 1
-        elif character == "-":
-            lexemes.append(Lexeme("-", Types.SUB, Types.OPERATOR, 10))
-            position += 1
-        elif character == "*":
-            lexemes.append(Lexeme("*", Types.BMUL, Types.OPERATOR, 20))
-            position += 1
-        elif character == "/":
-            lexemes.append(Lexeme("/", Types.BDIV, Types.OPERATOR, 20))
-            position += 1
-        elif character == "&":
-            lexemes.append(Lexeme("&", Types.BAND, Types.OPERATOR, 5))
-            position += 1
-        elif character == "|":
-            lexemes.append(Lexeme("|", Types.BOR, Types.OPERATOR, 5))
-            position += 1
-        elif character == "~":
-            lexemes.append(Lexeme("~", Types.UNEG, Types.OPERATOR, 2))
-            position += 1
-        elif character == "=":
-            start = position
-            end = position
-            while end < positionMax and (line[end] == "="):
-                end = end + 1
-            token = line[start:end]
-            if token == "=":
-                lexemes.append(Lexeme("=", Types.ASSIGNMENT, Types.OPERATOR, 0))
-            elif token == "==":
-                lexemes.append(Lexeme("=", Types.EQUALITY, Types.OPERATOR, 1))
-            position += 1
-        elif character == ":":
-            start = position
-            end = position
-            while end < positionMax and (line[end] == "="):
-                end = end + 1
-            token = line[start:end]
-            if token == ":":
-                pass
-            elif token == ":=":
-                lexemes.append(Lexeme(":=", Types.WALRUS, Types.OPERATOR, 0))
-            position += 1
-        else:
-            position = position + 1
-
-    return lexemes
-
 def readSourceFile(filepath):
     file = open(filepath, "r")
     lines = file.readlines()
-
-    # count = 0
-    # for line in lines:
-    #     count += 1
-    #     print(f"{count:03}: {line}", end="")
 
     for line in lines:
         if line[0] != '\n':
@@ -240,9 +75,9 @@ def readSourceFile(filepath):
                     print(Bcolors.WARNING + f"An error has occurred: {controlCharacterSplit[0]}" + Bcolors.ENDC, end ="")
                 else:
                     # Perform lexing:
-                    lexemes = srcLex(controlCharacterSplit[1])
+                    lexemes = lexxer.srcLex(controlCharacterSplit[1])
                     print(lexemes)
-                    rpn = shuntingYard(lexemes)
+                    rpn = shuntingYard.shuntingYard(lexemes)
                     print(rpn)
                     result = evaluate(rpn)
                     if controlCharacterSplit[0] == str(result):
@@ -255,6 +90,4 @@ def readSourceFile(filepath):
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    readSourceFile('shortTest.src')
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+    readSourceFile('test.src')

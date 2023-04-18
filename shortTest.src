@@ -3,3 +3,12 @@
 5.0 :=: 2.0 + 3.0
 5.5 :=: 2.0 + 2.0
 fizzbuzz :=: "fizz" + "buzz"
+
+//:=:<[>section header> || Result<sp>:=:>sp>line
+test :=: 123 12.34 abc "abc" ( ) + - * / & | ~ ;
+
+[single arithmetic operators]
+4 :=: 2 + 2
+4 :=: 6 - 2
+4 :=: 2 * 2
+4 :=: 8 / 2

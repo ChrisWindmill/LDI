@@ -22,8 +22,44 @@ Binary negation (!)
 #### 01.1.3 Defining our language - variables and data storage
 Global variables (any alphanumeric key starting with an alpha, that is not a keyword)
 #### 01.1.4 Defining our language - control flow - selection
+Note: This requires a move to multi-line lexxing and parsing, so requires us to change parts of the underlying single line architecture.
+```IF <expression> THEN
+    Pathway one
+ELSE
+    Pathway two
+ENDIF
+```
 #### 01.1.5 Defining our language - control flow - repetition
+Note: This requires a move to multi-line lexxing and parsing, so requires us to change parts of the underlying single line architecture.
+
+```
+WHILE <expression> THEN
+    Pathway one
+ENDWHILE
+```
+
 #### 01.1.6 Defining our language - data structure - list
+Our list will act as a simple array. We will do direct access first as this does not interfere with any of the existing logic,
+after that we will add append/pop functions to the list and begin to look at how we might address functions in our interpreter.
+
+
+
+Declaration
+```
+var name = []
+```
+
+Direct access
+```
+name [<integer>]
+```
+
+
+Append, pop
+```
+name.append(value)
+name.pop0()
+```
 ### 01.2 Implementing the lexxer
 #### 01.2.1 Implementing the lexxer for 01.1.1
 

@@ -26,6 +26,16 @@ Global variables (any alphanumeric key starting with an alpha, that is not a key
 #### 01.1.6 Defining our language - data structure - list
 ### 01.2 Implementing the lexxer
 #### 01.2.1 Implementing the lexxer for 01.1.1
+
+The binary add acts as an example for this section. Here we get the left and right hand operands for the addition, 
+replacing identifiers with their original values (to begin with this will just return the value on the stack). Where we 
+have two integer values we perform an integer addition, for two float values, or a mix of float and integer values we must 
+promote the values to floating point, with the result being a float.
+
+We have made the choice to handle string concatenation using the + operator.
+
+We have made the choice to handle all other cases (e.g. adding logical values) to be a string concatenation of the string
+version of whatever the value actually is.
 ```python
 def binaryAdd(stack):
     rhs = replaceIdentifier(stack)
@@ -54,6 +64,35 @@ def binaryAdd(stack):
         stack.append(Lexeme(str(result), Types.STRING, Types.VALUE, 0))
 ```
 #### 01.2.2 Implementing the lexxer for 01.1.2
+The binary and acts as an example for this section. Here we get the left and right hand operands for the addition, 
+replacing them with their logical values. We treat logical values as their logical value, otherwise 0, 0.0, and the empty 
+string are treated as false, everything else is true. Note: syntatically we accept true and True, false and False as equivalent.
+
+```python
+def isTrue(lexeme):
+    logicalVal = False
+    # Convert to logical values:
+    if lexeme.type == Types.INTEGER:
+        if int(lexeme.value) != 0:
+            logicalVal = True
+    elif lexeme.type == Types.FLOAT:
+        if float(lexeme.value) != 0.0:
+            logicalVal = True
+    elif lexeme.type == Types.STRING:
+        if lexeme.value != "":
+            logicalVal = True
+    elif lexeme.type == Types.LTRUE:
+        logicalVal = True
+    else:
+        pass
+
+    return logicalVal
+```
+
+
+We then perform the logical and between the two values, returning the result as either True or False (no lower case).
+
+
 ```python
 def binaryAND(stack):
     rhs = replaceIdentifier(stack)
@@ -69,6 +108,11 @@ def binaryAND(stack):
         stack.append(Lexeme(str(result), Types.LFALSE, Types.VALUE, 0))
 ```
 #### 01.2.3 Implementing the lexxer for 01.1.3
+Replacing the identifier is then modified to look at the global variable list. We simplify the content here by assuiming
+that the varible must exist in the global variable dictionary (otherwise we should throw an error). We create a token that
+has the parameters of the variable.
+
+
 ```python
 def replaceIdentifier(stack):
     value = stack.pop()

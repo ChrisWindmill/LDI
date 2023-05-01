@@ -1,3 +1,4 @@
+import variable
 from lexeme import Lexeme
 from lexeme import Types
 
@@ -35,10 +36,23 @@ def isTrue(lexeme):
 
     return logicalVal
 
-def binaryAdd(stack):
-    rhs = stack.pop()
-    lhs = stack.pop()
+def replaceIdentifier(stack):
+    value = stack.pop()
+    if value.type == Types.IDENTIFIER:
+        if variable.globalVariables[value.value]:
+            # value exists
+            temp = variable.globalVariables[value.value]
+            value.value = temp.strValue
+            value.type = temp.type
+            value.superType = Types.VALUE
+            value.precedece = temp.precedence
 
+    return value
+
+def binaryAdd(stack):
+    rhs = replaceIdentifier(stack)
+    lhs = replaceIdentifier(stack)
+    
     # Strictly Integer Case
     if lhs.type == Types.INTEGER and rhs.type == Types.INTEGER:
         result = int(rhs.value) + int(lhs.value)
@@ -54,15 +68,46 @@ def binaryAdd(stack):
         stack.append(Lexeme(str(result), Types.FLOAT, Types.VALUE, 0))
     # Strictly String Case
     elif lhs.type == Types.STRING and rhs.type == Types.STRING:
-        result = lhs.value[1:-1] + rhs.value[1:-1]
+        result = lhs.value + rhs.value
         stack.append(Lexeme(str(result), Types.STRING, Types.VALUE, 0))
     # Unknown case - treat values as strings and concatenate
     else:
-        result = str(lhs.value)[1:-1] + str(rhs.value)[1:-1]
+        result = str(lhs.value) + str(rhs.value)
         stack.append(Lexeme(str(result), Types.STRING, Types.VALUE, 0))
 
+def Assignment(stack):
+    rhs = replaceIdentifier(stack)
+    name = stack.pop()
+
+    var = variable.variable(name.value)
+    var.supertype = Types.VALUE
+    var.precedence = 0
+
+    if rhs.type == Types.INTEGER:
+        var.type = Types.INTEGER
+        var.intValue = int(rhs.value)
+    elif rhs.type == Types.FLOAT:
+        var.type = Types.FLOAT
+        var.floatValue = float(rhs.value)
+    elif rhs.type == Types.STRING:
+        var.type = Types.STRING
+        var.strValue = int(rhs.value)
+    elif rhs.type == Types.LTRUE:
+        var.type = Types.LTRUE
+        var.strValue = int(rhs.value)
+    elif rhs.type == Types.LFALSE:
+        var.type = Types.LFALSE
+        var.strValue = int(rhs.value)
+    else:
+        # throw error
+        pass
+
+    var.update()
+    variable.globalVariables[var.name] = var;
+    stack.append(Lexeme(var.strValue, var.type, var.supertype, var.precedence))
+
 def unaryNegation(stack):
-    value = stack.pop()
+    value = replaceIdentifier(stack)
     if value.type == Types.INTEGER:
         value.value = str(-int(value.value))
     elif value.type == Types.Float:
@@ -73,8 +118,8 @@ def unaryNegation(stack):
     stack.append(value)
 
 def binarySubtract(stack):
-    rhs = stack.pop()
-    lhs = stack.pop()
+    rhs = replaceIdentifier(stack)
+    lhs = replaceIdentifier(stack)
 
     # Strictly Integer Case
     if lhs.type == Types.INTEGER and rhs.type == Types.INTEGER:
@@ -95,8 +140,8 @@ def binarySubtract(stack):
 
 
 def binaryMultiply(stack):
-    rhs = stack.pop()
-    lhs = stack.pop()
+    rhs = replaceIdentifier(stack)
+    lhs = replaceIdentifier(stack)
 
     # Strictly Integer Case
     if lhs.type == Types.INTEGER and rhs.type == Types.INTEGER:
@@ -117,8 +162,8 @@ def binaryMultiply(stack):
 
 
 def binaryDivision(stack):
-    rhs = stack.pop()
-    lhs = stack.pop()
+    rhs = replaceIdentifier(stack)
+    lhs = replaceIdentifier(stack)
 
     # Mixed Int Float Case: promote integer to float for calculations
     if (lhs.type == Types.FLOAT or lhs.type == Types.INTEGER) and \
@@ -131,8 +176,8 @@ def binaryDivision(stack):
 
 
 def binaryAND(stack):
-    rhs = stack.pop()
-    lhs = stack.pop()
+    rhs = replaceIdentifier(stack)
+    lhs = replaceIdentifier(stack)
 
     logicalLHS = isTrue(lhs)
     logicalRHS = isTrue(rhs)
@@ -144,8 +189,8 @@ def binaryAND(stack):
         stack.append(Lexeme(str(result), Types.LFALSE, Types.VALUE, 0))
 
 def binaryOR(stack):
-    rhs = stack.pop()
-    lhs = stack.pop()
+    rhs = replaceIdentifier(stack)
+    lhs = replaceIdentifier(stack)
 
     logicalLHS = isTrue(lhs)
     logicalRHS = isTrue(rhs)
@@ -158,8 +203,8 @@ def binaryOR(stack):
 
 
 def binaryNotEqual(stack):
-    rhs = stack.pop()
-    lhs = stack.pop()
+    rhs = replaceIdentifier(stack)
+    lhs = replaceIdentifier(stack)
 
     # Strictly String Case:
     if lhs.type == Types.STRING and rhs.type == Types.STRING:
@@ -241,8 +286,8 @@ def binaryNotEqual(stack):
             stack.append(Lexeme(str(result), Types.LFALSE, Types.VALUE, 0))
 
 def binaryEquality(stack):
-    rhs = stack.pop()
-    lhs = stack.pop()
+    rhs = replaceIdentifier(stack)
+    lhs = replaceIdentifier(stack)
 
     # Strictly String Case:
     if lhs.type == Types.STRING and rhs.type == Types.STRING:

@@ -3,6 +3,7 @@ import shuntingYard
 import lexxer
 from lexeme import Lexeme
 from lexeme import Types
+from variable import variable
 
 
 class Bcolors:
@@ -15,6 +16,7 @@ class Bcolors:
     ENDC = '\033[0m'
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
+
 
 
 def evaluate(rpn):
@@ -35,6 +37,8 @@ def evaluate(rpn):
             else:
                 token.type = Types.STRING
             stack.append(token)
+        elif token.supertype == Types.IDENTIFIER:
+            stack.append(token)
         elif token.supertype == Types.OPERATOR:
             if token.type == Types.BADD:
                 operators.binaryAdd(stack)
@@ -49,7 +53,7 @@ def evaluate(rpn):
             elif token.type == Types.BOR:
                 operators.binaryOR(stack)
             elif token.type == Types.ASSIGNMENT:
-                pass
+                operators.Assignment(stack)
             elif token.type == Types.EQUALITY:
                 operators.binaryEquality(stack)
             elif token.type == Types.UNEG:
@@ -81,9 +85,9 @@ def readSourceFile(filepath):
                     print(rpn)
                     result = evaluate(rpn)
                     if controlCharacterSplit[0] == str(result):
-                        print("Success!")
+                        print(f"Success! --- {controlCharacterSplit[0]}")
                     else:
-                        print("Failed")
+                        print(f"Failed --- {controlCharacterSplit[0]}")
                     #print(bcolors.OKGREEN + f"{controlCharacterSplit[0]}" + bcolors.ENDC)
                     #print(bcolors.OKBLUE + f"{controlCharacterSplit[1]}" + bcolors.ENDC)
 

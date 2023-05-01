@@ -29,6 +29,16 @@ class Types:
     CONTROL = 25
     NOTEQUAL = 26
     UNARYNEGATION = 27
+    KEYWORD = 28
+    IF = 29
+    THEN = 30
+    ELSE = 31
+    ENDIF = 32
+    WHILE = 33
+    ENDWHILE = 34
+    DEF = 35
+    VAR = 36
+    UNKNOWN = 37
 
 @dataclass
 class Lexeme:

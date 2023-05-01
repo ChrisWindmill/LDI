@@ -1,7 +1,7 @@
 from lexeme import Lexeme
 from lexeme import Types
 
-
+keywords = ["if", "then", "else", "endif", "while", "endwhile", "def", "var"]
 def srcLex(line):
     lexemes = []
     buffer = []
@@ -34,8 +34,27 @@ def srcLex(line):
                 lexemes.append(Lexeme(token, Types.LFALSE, Types.VALUE, 0))
             elif token == "true" or token == "True":
                 lexemes.append(Lexeme(token, Types.LTRUE, Types.VALUE, 0))
+            elif token in keywords:
+                if token == "IF":
+                    lexemes.append(Lexeme(token, Types.IF, Types.KEYWORD, 100))
+                elif token == "THEN":
+                    lexemes.append(Lexeme(token, Types.THEN, Types.KEYWORD, 100))
+                elif token == "ELSE":
+                    lexemes.append(Lexeme(token, Types.ELSE, Types.KEYWORD, 100))
+                elif token == "ENDIF":
+                    lexemes.append(Lexeme(token, Types.ENDIF, Types.KEYWORD, 100))
+                elif token == "WHILE":
+                    lexemes.append(Lexeme(token, Types.WHILE, Types.KEYWORD, 100))
+                elif token == "ENDWHILE":
+                    lexemes.append(Lexeme(token, Types.ENDWHILE, Types.KEYWORD, 100))
+                elif token == "DEF":
+                    lexemes.append(Lexeme(token, Types.DEF, Types.KEYWORD, 100))
+                elif token == "VAR":
+                    lexemes.append(Lexeme(token, Types.VAR, Types.KEYWORD, 100))
+                else:
+                    lexemes.append(Lexeme(token, Types.UNKNOWN, Types.KEYWORD, 100))
             else:
-                lexemes.append(Lexeme(token, Types.IDENTIFIER, Types.VALUE, 0))
+                lexemes.append(Lexeme(token, Types.IDENTIFIER, Types.IDENTIFIER, 100))
             position = end
         elif character == "\"":
             start = position
@@ -43,7 +62,7 @@ def srcLex(line):
             while line[end] != "\"":
                 end = end + 1
             end +=1             # account for the "
-            token = line[start:end]
+            token = line[start+1:end-1]
             lexemes.append(Lexeme(token, Types.STRING, Types.VALUE, 0))
             position = end + 1
         elif character == "(":
@@ -83,7 +102,7 @@ def srcLex(line):
                 end = end + 1
             token = line[start:end]
             if token == "=":
-                lexemes.append(Lexeme("=", Types.ASSIGNMENT, Types.OPERATOR, 0))
+                lexemes.append(Lexeme("=", Types.ASSIGNMENT, Types.OPERATOR, 1))
                 position += 1
             elif token == "==":
                 lexemes.append(Lexeme("==", Types.EQUALITY, Types.OPERATOR, 1))

@@ -2,7 +2,7 @@ from lexeme import Lexeme
 from lexeme import Types
 import variable
 
-def shuntingYard(lexemes):
+def shuntingYardParser(lexemes):
     rpn = []
     operatorStack = []
 

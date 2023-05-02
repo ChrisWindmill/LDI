@@ -7,6 +7,17 @@
 ### 01 The Lexxer
 
 ### 01.1 Defining out language
+expression     → literal
+               | unary
+               | binary
+               | grouping ;
+
+literal        → INT | FLOAT | STRING | "True" | "False" | "Nil" ;
+grouping       → "(" expression ")" ;
+unary          → ( "-" | "!" ) expression ;
+binary         → expression operator expression ;
+operator       → "==" | "!=" | "<" | "<=" | ">" | ">="
+               | "+"  | "-"  | "*" | "/" ;
 #### 01.1.1 Defining our language - arithmetic operations
 Binary add (+)
 Binary subtract (-)

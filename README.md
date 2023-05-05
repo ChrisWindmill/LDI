@@ -7,6 +7,9 @@
 ### 01 The Lexxer
 
 ### 01.1 Defining out language
+statement   → expression 
+            | keyword expression 
+            | identifier equality expression        
 expression     → literal
                | unary
                | binary

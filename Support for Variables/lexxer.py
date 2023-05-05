@@ -75,7 +75,9 @@ def srcLex(line):
             lexemes.append(Lexeme("+", Types.BADD, Types.OPERATOR, 10))
             position += 1
         elif character == "-":
-            if lexemes[-1].supertype == Types.OPERATOR:
+            if position == 0:
+                lexemes.append(Lexeme("-", Types.UNEG, Types.OPERATOR, 50))
+            elif lexemes[-1].supertype == Types.OPERATOR:
                 lexemes.append(Lexeme("-", Types.UNEG, Types.OPERATOR, 50))
             else:
                 lexemes.append(Lexeme("-", Types.BSUB, Types.OPERATOR, 10))

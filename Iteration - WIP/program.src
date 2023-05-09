@@ -1,0 +1,13 @@
+[First program file]
+IF bob == 5
+    bob = 6 - fred + (6*fred) - 5
+    IF true
+        bob = 10
+    ENDIF
+    fred = 5
+ELSE
+    bob = 6 - 2 + 6
+    fred + bob
+    fred * bob
+ENDIF
+fred * (2 + bob)

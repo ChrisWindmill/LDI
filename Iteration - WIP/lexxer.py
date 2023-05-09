@@ -1,7 +1,7 @@
 from lexeme import Lexeme
 from lexeme import Types
 
-keywords = ["if", "then", "else", "endif", "while", "endwhile", "def", "var"]
+keywords = ["IF", "ELSE", "ENDIF", "WHILE", "ENDWHILE", "DEF", "VAR"]
 def srcLex(line):
     lexemes = []
     buffer = []
@@ -36,13 +36,11 @@ def srcLex(line):
                 lexemes.append(Lexeme(token, Types.LTRUE, Types.VALUE, 0))
             elif token in keywords:
                 if token == "IF":
-                    lexemes.append(Lexeme(token, Types.IF, Types.KEYWORD, 100))
-                elif token == "THEN":
-                    lexemes.append(Lexeme(token, Types.THEN, Types.KEYWORD, 100))
+                    lexemes.append(Lexeme(token, Types.IF, Types.KEYWORD, -1))
                 elif token == "ELSE":
-                    lexemes.append(Lexeme(token, Types.ELSE, Types.KEYWORD, 100))
+                    lexemes.append(Lexeme(token, Types.ELSE, Types.KEYWORD, -1))
                 elif token == "ENDIF":
-                    lexemes.append(Lexeme(token, Types.ENDIF, Types.KEYWORD, 100))
+                    lexemes.append(Lexeme(token, Types.ENDIF, Types.KEYWORD, -1))
                 elif token == "WHILE":
                     lexemes.append(Lexeme(token, Types.WHILE, Types.KEYWORD, 100))
                 elif token == "ENDWHILE":
@@ -75,7 +73,9 @@ def srcLex(line):
             lexemes.append(Lexeme("+", Types.BADD, Types.OPERATOR, 10))
             position += 1
         elif character == "-":
-            if lexemes[-1].supertype == Types.OPERATOR:
+            if position == 0:
+                lexemes.append(Lexeme("-", Types.UNEG, Types.OPERATOR, 50))
+            elif lexemes[-1].supertype == Types.OPERATOR:
                 lexemes.append(Lexeme("-", Types.UNEG, Types.OPERATOR, 50))
             else:
                 lexemes.append(Lexeme("-", Types.BSUB, Types.OPERATOR, 10))

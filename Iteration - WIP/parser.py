@@ -1,17 +1,18 @@
 from lexeme import Lexeme
 from lexeme import Types
+from naryTree import node
+import operators
 import variable
 
 def shuntingYardParser(lexemes):
     rpn = []
     operatorStack = []
 
-    # Our parser now really needs to deal with statements and expressions separately.
-    # A statement is a line of code that does something but does not return a value
-    # An expression is a line of code that can be reduced to a value
     if lexemes[0].supertype == Types.KEYWORD:
         # Keywords as the first lexeme on a line generate a different pathway to other statements
-        pass
+        if len(lexemes) > 1:
+            rpn = shuntingYardParser(lexemes[1:])
+        rpn.insert(0, lexemes[0])
     else:
         for token in lexemes:
             if token.supertype == Types.VALUE:
@@ -41,3 +42,27 @@ def shuntingYardParser(lexemes):
         while len(operatorStack) > 0:
             rpn.append(operatorStack.pop())
     return rpn
+
+
+def RPNToAST(rpn):
+    nodeList = []
+
+    for token in rpn:
+        if token.supertype == Types.KEYWORD:
+            pass
+        elif token.supertype == Types.VALUE or \
+             token.supertype == Types.IDENTIFIER:
+            nodeList.append(node(token))
+        elif token.supertype == Types.OPERATOR:
+            currentNode = node(token)
+            if operators.isBinaryOperator(token.type):
+                currentNode.nodes.insert(0, nodeList.pop())
+                currentNode.nodes.insert(0, nodeList.pop())
+            else:
+                currentNode.nodes.insert(0, nodeList.pop())
+            for childNode in currentNode.nodes:
+                childNode.parent = currentNode
+            nodeList.append(currentNode)
+
+    return nodeList.pop()
+

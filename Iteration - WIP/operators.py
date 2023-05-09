@@ -2,6 +2,12 @@ import variable
 from lexeme import Lexeme
 from lexeme import Types
 
+def isBinaryOperator(type):
+    if type != Types.UNEG and type != Types.UNARYNEGATION and type != Types.USUB:
+        return True
+    return False
+
+
 def isFloat (string):
     try:
         float(string)

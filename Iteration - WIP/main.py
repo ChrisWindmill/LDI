@@ -1,6 +1,13 @@
+import operators
 import parser
 import lexxer
 import interpreter
+from lexeme import Lexeme
+from lexeme import Types
+from variable import variable
+from dataclasses import dataclass
+from naryTree import node
+from naryTree import ifNode
 
 
 class Bcolors:
@@ -15,34 +22,103 @@ class Bcolors:
     UNDERLINE = '\033[4m'
 
 
+@dataclass
+class rpnLine:
+    lineNo: int
+    lexemes: list
+
+def immediateResolve(line):
+    controlCharacterSplit = line.split(" :=: ")
+    # Error case: a test line must have a result and an expression to be valid
+    if len(controlCharacterSplit) == 1:
+        print(Bcolors.WARNING + f"An error has occurred: {controlCharacterSplit[0]}" + Bcolors.ENDC, end="")
+    else:
+        lexemes = lexxer.srcLex(controlCharacterSplit[1])
+        print(lexemes)
+        rpn = parser.shuntingYardParser(lexemes)
+        print(rpn)
+        result = interpreter.evaluate(rpn)
+        if controlCharacterSplit[0] == str(result):
+            print(f"Success! --- {controlCharacterSplit[0]}")
+        else:
+            print(f"Failed --- {controlCharacterSplit[0]}")
+
+def delayedResolve(line):
+    lexemes = lexxer.srcLex(line)
+    rpn = parser.shuntingYardParser(lexemes)
+    return rpn
+
+def generateAST(program: list):
+    rootNode = node("Root")
+    currentNode = rootNode
+    parsingIF = 0
+    parsingWhile = 0
+
+    for i in range(0, len(program)):
+        if program[i].lexemes[0].supertype == Types.KEYWORD:
+            if program[i].lexemes[0].type == Types.IF:
+                # condition statement
+                parsingIF = parsingIF + 1
+                IFNode = ifNode(program[i].lexemes[1:])
+                IFNode.branch = "left"
+                IFNode.parent = currentNode
+                if isinstance(currentNode, ifNode):
+                    if currentNode.branch == "left":
+                        currentNode.left.append(IFNode)
+                    else:
+                        currentNode.right.append(IFNode)
+                else:
+                    currentNode.nodes.append(IFNode)
+                currentNode = IFNode
+            elif program[i].lexemes[0].type == Types.ELSE:
+                if isinstance(currentNode, ifNode):
+                    currentNode.branch = "right"
+            elif program[i].lexemes[0].type == Types.ENDIF:
+                parsingIF = parsingIF - 1
+                currentNode = currentNode.parent
+        else:
+            if isinstance(currentNode, ifNode):
+                if currentNode.branch == "left":
+                    currentNode.left.append(parser.RPNToAST(program[i].lexemes))
+                else:
+                    currentNode.right.append(parser.RPNToAST(program[i].lexemes))
+            elif type(currentNode) == "<class \'naryTree.whileNode\'>":
+                pass
+            else:
+                currentNode.nodes.append(parser.RPNToAST(program[i].lexemes))
+
+    return rootNode
+
 def readSourceFile(filepath):
     file = open(filepath, "r")
     lines = file.readlines()
 
-    for line in lines:
-        if line[0] != '\n':
-            if line[0] == "[":          # Handle comments in file
-                print(Bcolors.HEADER + f"{line[1:-2]}" + Bcolors.ENDC)
-            else:
-                controlCharacterSplit = line.split(" :=: ")
-                if len(controlCharacterSplit) == 1:             # An error has occurred, not a valid test
-                    print(Bcolors.WARNING + f"An error has occurred: {controlCharacterSplit[0]}" + Bcolors.ENDC, end ="")
-                else:
-                    # Perform lexing:
-                    lexemes = lexxer.srcLex(controlCharacterSplit[1])
-                    print(lexemes)
-                    # Perform parsing (create RPN version of lines):
-                    rpn = parser.shuntingYardParser(lexemes)
-                    print(rpn)
-                    # Interpret the line of code
-                    result = interpreter.evaluate(rpn)
+    # Generate list of lines
+    program = []
+    lineCount = 0
 
-                    # Determine if the return value matches the expected test result
-                    if controlCharacterSplit[0] == str(result):
-                        print(f"Success! --- {controlCharacterSplit[0]}")
-                    else:
-                        print(f"Failed --- {controlCharacterSplit[0]}")
+    for line in lines:
+        # If the line is blank, skip it:
+        if line[0] == "\n":
+            pass
+        # If the line is a source code only comment, display it, then remove
+        elif line[0] == "[":
+            print(Bcolors.HEADER + f"{line[1:-2]}" + Bcolors.ENDC)
+        else:
+            # Line is a test line, resolve immediately and interpret: <result> :=: <expression>
+            if " :=: " in line:
+                immediateResolve(line)
+            else:
+                program.append(rpnLine(lineCount, delayedResolve(line)))
+                lineCount = lineCount + 1
+
+    if len(program) > 0:
+        ast = generateAST(program)
+        # Program is now a simple AST of RPN sequences, we evaluate left to right from root node
+        for line in program:
+            print(line)
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    readSourceFile('test.src')
+    #readSourceFile('test.src')
+    readSourceFile('program.src')
